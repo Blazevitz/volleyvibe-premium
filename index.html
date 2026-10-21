@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0c0d0f" />
+  <title>Club Match Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="redesign.css" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <img id="clubLogo" class="brand-mark" src="assets/avc-logo.png" alt="Club logo" />
+        <div class="brand-copy"><p class="eyebrow">YOUR NEIGHBORHOOD VOLLEYBALL CLUB</p><h1 id="clubName">Loading club details…</h1></div>
+      </div>
+      <div class="top-actions"><span id="seasonStatus" class="status-pill">LOADING SEASON</span><button id="adminOpen" class="admin-open" type="button">Admin sign in</button><button id="themeToggle" class="icon-button" title="Toggle theme" aria-label="Toggle theme">◐</button></div>
+    </header>
+
+    <div id="dataNotice" class="data-notice" role="status" hidden></div>
+    <section class="dashboard-layout">
+      <aside class="dashboard-rail" aria-label="Club information">
+        <section class="panel event-card">
+          <p class="eyebrow">CLUB EVENT</p>
+          <h2>Good games.<br />Better company.</h2>
+          <p id="eventDateTime" class="event-date">Loading event details…</p>
+          <p id="eventVenue" class="event-venue"></p>
+          <div class="event-pills"><span class="pill">Court fee <strong id="eventFee">—</strong></span><button id="payFee" class="btn btn-primary btn-small">Court fee details <span>↗</span></button></div>
+        </section>
+
+        <section class="panel results-panel">
+          <div class="section-heading"><div><p class="eyebrow">THE FINAL TABLE</p><h2>Season standings</h2></div><button id="shareResults" class="btn btn-primary share-button" aria-label="Share final standings">↗</button></div>
+          <div id="finalResults" class="final-results"></div>
+          <div id="championNote" class="champion-note" hidden><span class="trophy">✦</span><div><strong id="championTitle">Tournament recap</strong><span id="championMessage">Thanks for bringing the energy to the court.</span></div></div>
+        </section>
+
+        <section class="panel follow-panel">
+          <div class="follow-copy"><div class="follow-icon">＋</div><div><h2>Keep tabs on your team</h2><p>Save a team or player to highlight their results.</p></div></div>
+          <form id="followForm" class="follow-form"><label class="sr-only" for="followSelect">Choose your name or team</label><select id="followSelect"><option value="">Choose a team or player…</option></select><button class="btn btn-primary" type="submit">Follow</button></form>
+          <p id="followMessage" class="inline-message" aria-live="polite"></p>
+        </section>
+      </aside>
+
+      <div class="content-stage">
+        <section class="club-intro">
+          <p id="heroEyebrow" class="eyebrow">AFTER THE LAST WHISTLE</p>
+          <h2 id="heroHeadline">Every rally has<br /><span>a story.</span></h2>
+          <p id="heroDescription">A home for the late-night regulars, friendly rivalries, and the points we’ll talk about next week.</p>
+          <div class="intro-details"><span><i class="live-dot"></i><span id="introSeasonStatus">Season recap</span></span><span><span id="introMatchCount">0</span> matches</span><span><span id="introTeamCount">0</span> teams</span></div>
+        </section>
+
+        <article class="panel featured-match">
+          <div class="match-top"><span class="eyebrow">LAST MATCH <span class="tiny-dot"></span> <span id="featuredStatus">—</span></span><div class="match-tools"><button class="ghost-button" id="popOut">↗ Pop out</button><button class="ghost-button" id="fullscreen">⛶ Full screen</button></div></div>
+          <div class="scoreboard" id="featuredScore"></div>
+          <p id="matchCaption" class="match-caption">Connect to the tournament server to load saved scores.</p>
+          <div id="featuredFooter" class="match-footer"><span>—</span><span>FINAL SCORE</span><span>—</span></div>
+        </article>
+
+        <section class="panel up-next">
+          <div class="up-next-content"><div class="upnext-icon">✓</div><div><strong id="scheduleStatusTitle">Season schedule</strong><p id="scheduleStatusText">Browse the event matches and results.</p></div><button class="text-button" data-tab="standings">Final table →</button></div>
+        </section>
+
+        <nav class="tabs" aria-label="Tournament sections">
+          <button class="tab active" data-tab="schedule"><span>▦</span> Scorebook</button>
+          <button class="tab" data-tab="standings"><span>↗</span> Standings</button>
+          <button class="tab" data-tab="teams"><span>♙</span> The teams</button>
+        </nav>
+
+        <section id="scheduleView" class="view active">
+          <div class="view-heading"><div><p class="eyebrow">THE SCOREBOOK</p><h2>Matches, remembered.</h2><p>Browse event scores and schedules.</p></div><div class="view-actions"><input id="matchSearch" class="search" placeholder="⌕  Search team or match…" aria-label="Search matches"><select id="resultFilter" aria-label="Filter matches"><option value="all">All teams</option></select></div></div>
+          <div class="schedule-summary"><span><b id="matchCount">0</b> matches</span><span><i class="tiny-dot"></i> Results</span><span class="summary-right">Schedule &amp; scores</span></div>
+          <div id="matchList" class="match-list"></div>
+        </section>
+
+        <section id="standingsView" class="view">
+          <div class="view-heading"><div><p class="eyebrow">SEASON RECAP</p><h2>Final standings</h2><p>Rankings based on wins and match results.</p></div><span class="tag tag-green">✓ Final</span></div>
+          <div class="panel table-panel"><div class="table-head"><span>TEAM</span><span>W–L</span><span>WIN %</span><span>POINTS FOR</span><span>POINTS AGAINST</span></div><div id="standingsList"></div></div>
+        </section>
+
+        <section id="teamsView" class="view">
+          <div class="view-heading"><div><p class="eyebrow">THE LINEUP</p><h2>Meet the teams</h2><p>Four squads, one shared court.</p></div><span class="tag">4 teams</span></div>
+          <div id="teamsGrid" class="teams-grid"></div>
+        </section>
+      </div>
+    </section>
+
+    <footer><div class="footer-brand"><img class="brand-mark mini" src="assets/avc-logo.png" alt="" aria-hidden="true" /><span id="footerClubName">Club</span></div><span>For the love of the game.</span><button id="resetData" class="footer-reset">Reset local preferences</button></footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="payDialog" class="modal"><form method="dialog"><button class="modal-close" aria-label="Close">×</button><p class="eyebrow">COURT CONTRIBUTION</p><h2>Court fee details</h2><p class="muted">Court fee: <strong id="paymentFee">—</strong></p><div class="payment-box"><span class="payment-symbol">₱</span><div><strong id="paymentFeeAmount">—</strong><small id="paymentClubName">—</small></div></div><div id="paymentQrSection" class="payment-qr-section" hidden><p>Scan to pay with <strong id="paymentProviderName"></strong></p><img id="paymentQrImage" alt="Club payment QR code" /><a id="paymentQrOpen" target="_blank" rel="noopener noreferrer">Open QR image</a></div><p class="fine-print">Please confirm payment arrangements with the club administrator.</p><button class="btn btn-primary modal-done">Close</button></form></dialog>
+  <dialog id="adminDialog" class="admin-dialog">
+    <button id="adminClose" class="modal-close" type="button" aria-label="Close admin panel">×</button>
+    <section id="adminLoginView" class="admin-login">
+      <p class="eyebrow">OWNER ACCESS</p><h2>Admin sign in</h2>
+      <p class="muted">Sign in to manage club settings, teams, and tournament matches.</p>
+      <form id="adminLoginForm">
+        <label for="adminPassword">Admin password</label>
+        <input id="adminPassword" name="password" type="password" autocomplete="current-password" required />
+        <button class="btn btn-primary" type="submit">Sign in</button>
+      </form>
+      <p id="adminLoginMessage" class="admin-message" role="status"></p>
+    </section>
+    <section id="adminDashboard" class="admin-dashboard" hidden>
+      <div class="admin-heading"><div><p class="eyebrow">TOURNAMENT CONTROL</p><h2>Admin settings</h2></div><button id="adminLogout" class="ghost-button" type="button">Sign out</button></div>
+      <nav class="admin-tabs" aria-label="Admin sections">
+        <button class="admin-tab active" type="button" data-admin-tab="settings">Event settings</button>
+        <button class="admin-tab" type="button" data-admin-tab="teams">Teams</button>
+        <button class="admin-tab" type="button" data-admin-tab="matches">Matches</button>
+      </nav>
+      <section class="admin-section active" id="adminSettingsSection">
+        <form id="settingsForm" class="admin-form">
+          <label>Club name<input name="club_name" required maxlength="120" /></label>
+          <label>Event date<input name="event_date" type="date" required /></label>
+          <div class="admin-form-row"><label>Start time<input name="start_time" type="time" required /></label><label>End time<input name="end_time" type="time" required /></label></div>
+          <label>Venue<input name="venue" required maxlength="180" /></label>
+          <label>Court fee (PHP)<input name="court_fee" type="number" min="0" step="1" required /></label>
+          <div class="admin-copy-fields">
+            <h3>Homepage feature copy</h3>
+            <label>Small heading<input name="hero_eyebrow" required maxlength="80" /></label>
+            <label>Main headline<textarea name="hero_headline" required maxlength="180" rows="2" aria-describedby="heroHeadlineHelp"></textarea><small id="heroHeadlineHelp">Use a new line to split the headline into two lines.</small></label>
+            <label>Description<textarea name="hero_description" required maxlength="500" rows="3"></textarea></label>
+          </div>
+          <div class="admin-form-actions"><button class="btn btn-primary" type="submit">Save changes</button><button class="ghost-button" type="button" data-cancel-form="settingsForm">Cancel</button></div>
+        </form>
+        <section class="admin-form admin-payment-form">
+          <h3>Payment QR code</h3>
+          <p class="admin-help">Upload the current GCash, Maya, or other payment QR. Visitors can scan it from the court-fee dialog.</p>
+          <label>Payment provider<select id="paymentProviderInput"><option value="GCash">GCash</option><option value="Maya">Maya</option><option value="Other">Other</option></select></label>
+          <label>QR code image<input id="paymentQrUpload" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+          <p class="admin-help">PNG, JPG, or WebP · maximum 4 MB. Uploading replaces the current QR code.</p>
+          <div id="adminQrPreviewWrap" class="admin-qr-preview" hidden><img id="adminQrPreview" alt="Current payment QR code" /><span id="adminQrLabel"></span></div>
+          <div class="admin-form-actions"><button id="savePaymentQr" class="btn btn-primary" type="button">Upload / replace QR</button><button id="removePaymentQr" class="ghost-button danger" type="button" hidden>Remove QR</button></div>
+          <p id="paymentQrMessage" class="admin-message" role="status" aria-live="polite"></p>
+        </section>
+      </section>
+      <section class="admin-section" id="adminTeamsSection" hidden>
+        <div class="admin-list-heading"><h3>Team management</h3><button id="newTeamButton" class="btn btn-primary" type="button">Add team</button></div>
+        <div id="adminTeamList" class="admin-list"></div>
+        <form id="teamForm" class="admin-form" hidden>
+          <h3 id="teamFormTitle">Add team</h3><input name="id" type="hidden" />
+          <label>Team name<input name="name" required maxlength="80" /></label>
+          <label>Team color<input name="color" type="color" value="#d2aa42" required /></label>
+          <label>Tagline<input name="tagline" maxlength="120" /></label>
+          <label>Players (one name per line)<textarea name="players" rows="3"></textarea></label>
+          <div class="admin-form-actions"><button class="btn btn-primary" type="submit">Save team</button><button class="ghost-button" type="button" data-cancel-form="teamForm">Cancel</button></div>
+        </form>
+      </section>
+      <section class="admin-section" id="adminMatchesSection" hidden>
+        <div class="admin-list-heading"><h3>Match management</h3><button id="newMatchButton" class="btn btn-primary" type="button">Add match</button></div>
+        <div id="adminMatchList" class="admin-list"></div>
+        <form id="matchForm" class="admin-form" hidden>
+          <h3 id="matchFormTitle">Add match</h3><input name="id" type="hidden" />
+          <div class="admin-form-row"><label>Team A<select name="team_a_id" required></select></label><label>Team B<select name="team_b_id" required></select></label></div>
+          <div class="admin-form-row"><label>Match date<input name="match_date" type="date" /></label><label>Match time<input name="match_time" type="time" /></label></div>
+          <label>Referee<input name="referee" maxlength="120" /></label>
+          <div class="admin-form-row"><label>Team A score<input name="score_a" type="number" min="0" step="1" /></label><label>Team B score<input name="score_b" type="number" min="0" step="1" /></label></div>
+          <label>Status<select name="status" required><option value="scheduled">Scheduled</option><option value="in_progress">In Progress</option><option value="completed">Completed</option><option value="official">Official</option></select></label>
+          <div class="admin-form-actions"><button class="btn btn-primary" type="submit">Save match</button><button class="ghost-button" type="button" data-cancel-form="matchForm">Cancel</button></div>
+        </form>
+      </section>
+      <p id="adminMessage" class="admin-message" role="status" aria-live="polite"></p>
+      <p id="adminLoading" class="admin-loading" hidden>Loading…</p>
+    </section>
+  </dialog>
+  
+  <script type="module">
+    
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAwwlX04NoY3hxquMkqA_ka2z9L_imocUo",
+    authDomain: "afterhours-9bd78.firebaseapp.com",
+    projectId: "afterhours-9bd78",
+    storageBucket: "afterhours-9bd78.firebasestorage.app",
+    messagingSenderId: "967869226053",
+    appId: "1:967869226053:web:671b4e6fa0f3c240aa172c",
+    measurementId: "G-8MY5QRPKCX"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+<script src="app.js"></script>
+</body>
+</html>
