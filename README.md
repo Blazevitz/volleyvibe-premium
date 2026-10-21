@@ -38,23 +38,24 @@ Responsive volleyball club match center with event settings, a scorebook, team c
 
 ## Configure and run locally
 
-Open PowerShell and set the server-only environment variables for that terminal session. The admin password is entered privately; only its password hash is passed to PHP:
+The admin sign-in is part of the same website. It uses the local PHP API and MySQL database to protect and save admin changes; it does not need a separate admin website or terminal environment variables.
+
+1. Start **Apache** and **MySQL** from the XAMPP Control Panel.
+2. Open `http://localhost/volleyvibe-premium/` (or `http://127.0.0.1/volleyvibe-premium/`). VS Code Live Server cannot execute the PHP API.
+3. Sign in using the locally configured admin password.
+
+The API reads database and admin settings from `C:\xampp\afterhours-private\config.php`, outside Apache's `htdocs` document root. This local config is not part of the repository. The current XAMPP config uses the default local `root` MySQL account with an empty password; use it only on a private development machine. For deployments beyond local testing, replace it with a restricted database user and keep the config folder protected.
+
+To change the admin password, generate a replacement hash in PowerShell and update only the `admin_password_hash` value in the private config file:
 
 ```powershell
-$env:AVC_DB_DSN = 'mysql:host=127.0.0.1;dbname=afterhours_vbc;charset=utf8mb4'
-$env:AVC_DB_USER = 'avc_app'
-$dbSecret = Read-Host 'MySQL application password' -AsSecureString
-$env:AVC_DB_PASSWORD = [System.Net.NetworkCredential]::new('', $dbSecret).Password
-$adminSecret = Read-Host 'Choose an admin password' -AsSecureString
+$adminSecret = Read-Host 'New admin password' -AsSecureString
 $adminPlain = [System.Net.NetworkCredential]::new('', $adminSecret).Password
 $adminHash = $adminPlain | & 'C:\xampp\php\php.exe' -r '$p=trim(stream_get_contents(STDIN)); echo password_hash($p, PASSWORD_DEFAULT);'
-$env:AVC_ADMIN_PASSWORD_HASH = $adminHash.Trim()
-& 'C:\xampp\php\php.exe' -S 127.0.0.1:8000 -t 'C:\xampp\htdocs\volleyvibe-premium'
+$adminHash.Trim()
 ```
 
-Open `http://127.0.0.1:8000` and choose **Admin sign in**. Keep the PHP server terminal open while using the site. Stop the local server with Ctrl+C. These variables are not saved in the project; set them again when restarting the server.
-
-In Apache/XAMPP deployments, configure the same `AVC_DB_DSN`, `AVC_DB_USER`, `AVC_DB_PASSWORD`, and `AVC_ADMIN_PASSWORD_HASH` variables in the Apache server environment (for example, protected `SetEnv` entries in a non-public virtual-host configuration), then restart Apache. Never put the database password or admin password/hash in browser JavaScript or a public repository. Use HTTPS outside localhost so admin session cookies are Secure.
+Copy the generated hash into `C:\xampp\afterhours-private\config.php`. The plain-text password is not stored in the website or config file. Never move this config into `htdocs` or commit it to the repository. Use HTTPS outside localhost so admin session cookies are Secure.
 
 ## Admin features
 
@@ -67,7 +68,7 @@ In Apache/XAMPP deployments, configure the same `AVC_DB_DSN`, `AVC_DB_USER`, `AV
 
 ## Security and deployment
 
-The PHP API verifies the admin password against the server-side `AVC_ADMIN_PASSWORD_HASH`, regenerates the session on login, rate-limits repeated login failures, uses HttpOnly/SameSite cookies, checks CSRF tokens on writes, validates inputs and uploaded image contents, and uses prepared SQL statements. Database foreign keys protect match history and public API routes cannot write data. Keep PHP, MySQL, and the site on supported versions and use HTTPS in production.
+The PHP API verifies the admin password against the hash in the private server-side config file, regenerates the session on login, rate-limits repeated login failures, uses HttpOnly/SameSite cookies, checks CSRF tokens on writes, validates inputs and uploaded image contents, and uses prepared SQL statements. Database foreign keys protect match history and public API routes cannot write data. Keep PHP, MySQL, and the site on supported versions and use HTTPS in production.
 
 By default, uploaded QR images are stored in an `afterhours-private\payment-qr` folder alongside (not inside) the web document root. Ensure the PHP process can create and write to that folder. To use a different private folder, set the server-only `AVC_PAYMENT_QR_DIR` environment variable to its absolute path before starting PHP/Apache. Never place uploads inside a publicly browsable folder.
 

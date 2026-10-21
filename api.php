@@ -41,13 +41,44 @@ function read_json(): array
     return $data;
 }
 
+function private_config(): array
+{
+    static $config;
+    if (isset($config)) {
+        return $config;
+    }
+    $configuredPath = getenv('AVC_PRIVATE_CONFIG');
+    if ($configuredPath !== false && trim($configuredPath) !== '') {
+        $path = trim($configuredPath);
+    } else {
+        $path = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'afterhours-private' . DIRECTORY_SEPARATOR . 'config.php';
+    }
+    if (!is_file($path) || !is_readable($path)) {
+        respond(503, ['error' => 'Private PHP configuration was not found. Create afterhours-private\\config.php next to the web root as described in README.md.']);
+    }
+    $loaded = require $path;
+    if (!is_array($loaded)) {
+        respond(503, ['error' => 'Private PHP configuration must return an array.']);
+    }
+    $config = $loaded;
+    return $config;
+}
+
 function database(): PDO
 {
+    $config = private_config();
     $dsn = getenv('AVC_DB_DSN');
     $user = getenv('AVC_DB_USER');
     $password = getenv('AVC_DB_PASSWORD');
-    if (!$dsn || $user === false || $password === false) {
-        respond(503, ['error' => 'Database is not configured. Set AVC_DB_DSN, AVC_DB_USER, and AVC_DB_PASSWORD on the PHP server.']);
+    $databaseConfig = $config['database'] ?? [];
+    if (!is_array($databaseConfig)) {
+        respond(503, ['error' => 'The database section of private PHP configuration is invalid.']);
+    }
+    $dsn = $dsn === false ? ($databaseConfig['dsn'] ?? null) : $dsn;
+    $user = $user === false ? ($databaseConfig['user'] ?? null) : $user;
+    $password = $password === false ? ($databaseConfig['password'] ?? null) : $password;
+    if (!is_string($dsn) || $dsn === '' || !is_string($user) || !is_string($password)) {
+        respond(503, ['error' => 'Database is not configured. Check the database section in afterhours-private\\config.php.']);
     }
     try {
         return new PDO($dsn, $user, $password, [
@@ -125,6 +156,11 @@ function payment_qr_directory(): string
     if ($configured !== false && trim($configured) !== '') {
         return rtrim($configured, DIRECTORY_SEPARATOR);
     }
+    $config = private_config();
+    $configured = $config['payment_qr_dir'] ?? null;
+    if (is_string($configured) && trim($configured) !== '') {
+        return rtrim($configured, DIRECTORY_SEPARATOR);
+    }
     $documentRoot = realpath((string)($_SERVER['DOCUMENT_ROOT'] ?? ''));
     $base = $documentRoot !== false ? dirname($documentRoot) : dirname(__DIR__);
     return $base . DIRECTORY_SEPARATOR . 'afterhours-private' . DIRECTORY_SEPARATOR . 'payment-qr';
@@ -178,8 +214,11 @@ try {
 
     if ($action === 'login' && $method === 'POST') {
         $passwordHash = getenv('AVC_ADMIN_PASSWORD_HASH');
-        if ($passwordHash === false || $passwordHash === '') {
-            respond(503, ['error' => 'Admin access is not configured. Set AVC_ADMIN_PASSWORD_HASH on the PHP server.']);
+        if ($passwordHash === false) {
+            $passwordHash = private_config()['admin_password_hash'] ?? null;
+        }
+        if (!is_string($passwordHash) || $passwordHash === '') {
+            respond(503, ['error' => 'Admin access is not configured. Set admin_password_hash in afterhours-private\\config.php.']);
         }
         $db = database();
         $ipKey = hash_hmac('sha256', (string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'), $passwordHash);
